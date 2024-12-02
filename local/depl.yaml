@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: busybox
+  namespace: test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: busybox
+  template:
+    metadata:
+      labels:
+        app: busybox
+    spec:
+      containers:
+        - name: busybox
+          image: busybox
+          args:
+            - sleep
+            - "infinity"  # Keeps the pod running indefinitely
+          resources:
+            requests:
+              cpu: "10m"
+              memory: "16Mi"

@@ -1,0 +1,77 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: cilium
+  namespace: kube-system
+spec:
+  interval: 10m
+  timeout: 5m
+  chart:
+    spec:
+      chart: cilium
+      version: 1.16.4
+      sourceRef:
+        kind: HelmRepository
+        name: cilium-repo
+      interval: 5m
+  releaseName: cilium
+  values:
+    cluster:
+      name: default
+    externalIPs:
+      enabled: true
+    k8sClientRateLimit:
+      burst: 200
+      qps: 50
+    #k8sServiceHost: 192.168.178.107
+    #k8sServicePort: "6443"
+    kubeProxyReplacement: true
+    l2announcements:
+      enabled: true
+    operator:
+      replicas: 1
+      rollOutPods: true
+      # Operator Prometheus configuration
+      prometheus:
+        enabled: true
+        serviceMonitor:
+          enabled: true
+          labels:
+            release: prometheus
+    rollOutCiliumPods: true
+    routingMode: tunnel
+    tunnelProtocol: vxlan
+    prometheus:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+        labels:
+          release: prometheus
+    hubble:
+      metrics:
+        enabled:
+          - dns:query;ignoreAAAA
+          - drop
+          - tcp
+          - flow
+          - icmp
+          - http
+        serviceMonitor:
+          enabled: true
+          labels:
+            release: prometheus
+      relay:
+        enabled: true
+      ui:
+        enabled: true
+        ingress:
+          enabled: true
+          annotations:
+            kubernetes.io/ingress.class: nginx
+            kubernetes.io/tls-acme: "true"
+          className: nginx
+          hosts:
+            - example.com
+          tls:
+            - hosts:
+              - example.com

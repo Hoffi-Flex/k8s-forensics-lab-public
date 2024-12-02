@@ -1,0 +1,26 @@
+apiVersion: cilium.io/v1alpha1
+kind: TracingPolicy
+metadata:
+  name: block-wget-execution
+spec:
+  kprobes:
+    - call: "security_bprm_check"
+      syscall: false
+      args:
+        - index: 0
+          type: "linux_binprm"
+      returnArg:
+        index: 0
+        type: "int"
+      selectors:
+        - matchArgs:
+            - index: 0
+              operator: "Equal"
+              values:
+                - "/bin/wget"
+                - "/usr/bin/wget"
+          matchActions:
+            - action: Sigkill  # Use matchActions with action type Sigkill
+            -  action: Post
+               userStackTrace: true
+      message: "Process attempted to execute wget"
